@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pinda Limpa — Denuncie descarte irregular</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --verde-mata: #2563EB;
+    --verde-claro: #60A5FA;
+    --terra: #DADFE5;
+    --creme: #FFFFFF;
+    --tinta: #111111;
+    --branco: #FFFFFF;
+    --erro: #B4432C;
+    --radius: 14px;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  *, *::before, *::after { box-sizing: inherit; }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --creme: #FFFFFF;
+      --tinta: #111111;
+      --branco: #FFFFFF;
+      --terra: #DADFE5;
+    }
+  }
+  :root[data-theme="dark"] {
+    --creme: #FFFFFF;
+    --tinta: #111111;
+    --branco: #FFFFFF;
+    --terra: #DADFE5;
+  }
+
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--creme);
+    color: var(--tinta);
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 17px;
+    line-height: 1.5;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  header {
+    width: 100%;
+    background: var(--verde-mata);
+    color: var(--creme);
+    padding: env(safe-area-inset-top, 0px) 0 0 0;
+  }
+  .header-inner {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 28px 24px 26px;
+    text-align: center;
+  }
+  header .eyebrow {
+    font-size: 15px;
+    color: var(--verde-claro);
+    margin: 0 0 6px;
+  }
+  header h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: clamp(28px, 6vw, 38px);
+    margin: 0 0 10px;
+  }
+  header p {
+    margin: 0;
+    font-size: 16px;
+    color: #E4E9DD;
+    max-width: 46ch;
+    margin-inline: auto;
+  }
+
+  main {
+    width: 100%;
+    max-width: 640px;
+    padding: 28px 24px 60px;
+    flex: 1;
+  }
+
+  form {
+    background: var(--branco);
+    border: 1px solid var(--terra);
+    border-radius: var(--radius);
+    padding: 28px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+
+  .campo { display: flex; flex-direction: column; gap: 8px; }
+  label {
+    font-size: 16px;
+    font-weight: 600;
+  }
+  label .opcional {
+    font-weight: 400;
+    color: var(--verde-claro);
+    font-size: 14px;
+  }
+  input[type="text"] {
+    font: inherit;
+    font-size: 18px;
+    padding: 14px 16px;
+    border: 2px solid var(--terra);
+    border-radius: 10px;
+    background: var(--creme);
+    color: var(--tinta);
+    width: 100%;
+  }
+  input[type="text"]:focus {
+    outline: 3px solid var(--verde-claro);
+    outline-offset: 1px;
+    border-color: var(--verde-mata);
+  }
+
+  .upload-area {
+    border: 2px dashed var(--terra);
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    background: var(--creme);
+    cursor: pointer;
+    transition: border-color .15s ease;
+  }
+  .upload-area:hover, .upload-area:focus-within { border-color: var(--verde-mata); }
+  .upload-area input { display: none; }
+  .upload-area span { display: block; font-size: 15px; color: var(--verde-claro); margin-top: 6px; }
+  #preview {
+    margin-top: 14px;
+    max-width: 100%;
+    max-height: 220px;
+    border-radius: 8px;
+    display: none;
+  }
+
+  button[type="submit"] {
+    font: inherit;
+    font-size: 19px;
+    font-weight: 700;
+    color: var(--branco);
+    background: var(--verde-mata);
+    border: none;
+    border-radius: 10px;
+    padding: 16px;
+    cursor: pointer;
+    transition: background .15s ease, transform .1s ease;
+  }
+  button[type="submit"]:hover { background: #274D31; }
+  button[type="submit"]:active { transform: scale(0.98); }
+  button[type="submit"]:focus-visible { outline: 3px solid var(--verde-claro); outline-offset: 2px; }
+
+  .erro { color: var(--erro); font-size: 14px; display: none; }
+
+  /* Overlay de agradecimento */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(34, 48, 31, 0.6);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    z-index: 10;
+  }
+  .overlay.mostrar { display: flex; }
+  .overlay-card {
+    background: var(--branco);
+    border-radius: var(--radius);
+    padding: 40px 32px;
+    max-width: 420px;
+    text-align: center;
+    animation: surgir .25s ease-out;
+  }
+  @keyframes surgir {
+    from { opacity: 0; transform: translateY(12px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .overlay-card .icone {
+    width: 60px; height: 60px;
+    margin: 0 auto 16px;
+    border-radius: 50%;
+    background: var(--verde-mata);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .overlay-card .icone svg { width: 28px; height: 28px; }
+  .overlay-card h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 24px;
+    margin: 0 0 10px;
+  }
+  .overlay-card p {
+    margin: 0 0 24px;
+    color: var(--tinta);
+    font-size: 16px;
+  }
+  .overlay-card button {
+    font: inherit;
+    font-size: 16px;
+    font-weight: 600;
+    background: var(--terra);
+    color: var(--tinta);
+    border: none;
+    border-radius: 8px;
+    padding: 12px 22px;
+    cursor: pointer;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .overlay-card { animation: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <p class="eyebrow">Prefeitura de Pindamonhangaba — SP</p>
+    <h1>Pinda Limpa</h1>
+    <p>Encontrou lixo ou entulho jogado em local indevido? Nos avise em menos de um minuto.</p>
+  </div>
+</header>
+
+<main>
+  <form id="form-denuncia" novalidate>
+
+    <div class="campo">
+      <label for="nome">Seu nome</label>
+      <input type="text" id="nome" name="nome" autocomplete="name" required placeholder="Como podemos te chamar?">
+    </div>
+
+    <div class="campo">
+      <label for="rua">Rua onde encontrou o lixo</label>
+      <input type="text" id="rua" name="rua" required placeholder="Ex: Rua das Palmeiras, próximo ao nº 120">
+    </div>
+
+    <div class="campo">
+      <label for="bairro">Bairro</label>
+      <input type="text" id="bairro" name="bairro" required placeholder="Ex: Crispim, Mombaça, Cidade Nova">
+    </div>
+
+    <div class="campo">
+      <label for="foto">Foto do local <span class="opcional">(opcional)</span></label>
+      <label class="upload-area" for="foto">
+        <input type="file" id="foto" name="foto" accept="image/*" capture="environment">
+        <strong>Toque para tirar ou escolher uma foto</strong>
+        <span>Ajuda a equipe a localizar e avaliar o descarte</span>
+        <img id="preview" alt="Prévia da foto enviada">
+      </label>
+    </div>
+
+    <p class="erro" id="msg-erro">Por favor, preencha seu nome, a rua e o bairro.</p>
+
+    <button type="submit">Enviar denúncia</button>
+  </form>
+</main>
+
+<div class="overlay" id="overlay">
+  <div class="overlay-card">
+    <div class="icone">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#FAF6EF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 6L9 17l-5-5"/>
+      </svg>
+    </div>
+    <h2>Obrigado por colaborar!</h2>
+    <p>Sua denúncia foi registrada e vai ajudar a manter Pindamonhangaba mais limpa.</p>
+    <button id="btn-fechar">Enviar outra denúncia</button>
+  </div>
+</div>
+
+<script>
+  const EMAIL_DESTINO = 'nicholasdribeiro@hotmail.com';
+  const ENDPOINT = `https://formsubmit.co/ajax/${EMAIL_DESTINO}`;
+
+  const form = document.getElementById('form-denuncia');
+  const fotoInput = document.getElementById('foto');
+  const preview = document.getElementById('preview');
+  const overlay = document.getElementById('overlay');
+  const msgErro = document.getElementById('msg-erro');
+
+  fotoInput.addEventListener('change', () => {
+    const arquivo = fotoInput.files[0];
+    if (arquivo) {
+      const leitor = new FileReader();
+      leitor.onload = e => {
+        preview.src = e.target.result;
+        preview.style.display = 'block';
+      };
+      leitor.readAsDataURL(arquivo);
+    }
+  });
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const nome = document.getElementById('nome').value.trim();
+    const rua = document.getElementById('rua').value.trim();
+    const bairro = document.getElementById('bairro').value.trim();
+
+    if (!nome || !rua || !bairro) {
+      msgErro.style.display = 'block';
+      return;
+    }
+    msgErro.style.display = 'none';
+
+    overlay.classList.add('mostrar');
+  });
+
+  document.getElementById('btn-fechar').addEventListener('click', () => {
+    overlay.classList.remove('mostrar');
+    form.reset();
+    preview.style.display = 'none';
+  });
+</script>
+
+</body>
+</html>
