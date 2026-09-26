@@ -285,10 +285,7 @@
 </div>
 
 <script>
-  // ATENÇÃO: troque o e-mail abaixo pelo endereço que deve receber as denúncias.
-  // Na primeira denúncia enviada pelo site já publicado, o FormSubmit manda
-  // um e-mail de confirmação para esse endereço — é preciso clicar no link
-  // de confirmação uma única vez para ativar o recebimento automático.
+  
   const EMAIL_DESTINO = 'nicholasdribeiro@hotmail.com';
 
   const form = document.getElementById('form-denuncia');
@@ -297,7 +294,7 @@
   const overlay = document.getElementById('overlay');
   const msgErro = document.getElementById('msg-erro');
 
-  // Configura o destino do envio e o retorno após enviar
+  
   form.action = `https://formsubmit.co/${EMAIL_DESTINO}`;
   document.getElementById('campo-next').value =
     `${window.location.origin}${window.location.pathname}?enviado=1`;
@@ -326,10 +323,10 @@
     }
     msgErro.style.display = 'none';
 
-    // Deixa o assunto do e-mail mais claro antes de enviar de verdade
+    
     document.getElementById('campo-subject').value = `Nova denúncia — ${bairro}`;
-    // Sem preventDefault aqui: o formulário segue e envia normalmente,
-    // incluindo a foto, e volta para esta página com ?enviado=1
+    
+    
   });
 
   document.getElementById('btn-fechar').addEventListener('click', () => {
@@ -338,7 +335,7 @@
     preview.style.display = 'none';
   });
 
-  // Se acabamos de voltar de um envio bem-sucedido, mostra a mensagem
+  
   const parametros = new URLSearchParams(window.location.search);
   if (parametros.get('enviado') === '1') {
     overlay.classList.add('mostrar');
