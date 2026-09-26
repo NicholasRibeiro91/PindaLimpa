@@ -234,7 +234,7 @@
 </header>
 
 <main>
-  <form id="form-denuncia" novalidate>
+  <form id="form-denuncia" method="POST" enctype="multipart/form-data" novalidate>
 
     <div class="campo">
       <label for="nome">Seu nome</label>
@@ -261,10 +261,13 @@
       </label>
     </div>
 
+    <input type="hidden" name="_subject" id="campo-subject" value="Nova denúncia">
+    <input type="hidden" name="_captcha" value="false">
+    <input type="hidden" name="_next" id="campo-next">
+
     <p class="erro" id="msg-erro">Por favor, preencha seu nome, a rua e o bairro.</p>
-    <p class="erro" id="msg-erro-envio">Não foi possível enviar agora. Verifique sua internet e tente de novo.</p>
-    
-    <button type="submit" id="btn-enviar">Enviar denúncia</button>
+
+    <button type="submit">Enviar denúncia</button>
   </form>
 </main>
 
@@ -282,17 +285,22 @@
 </div>
 
 <script>
-  
+  // ATENÇÃO: troque o e-mail abaixo pelo endereço que deve receber as denúncias.
+  // Na primeira denúncia enviada pelo site já publicado, o FormSubmit manda
+  // um e-mail de confirmação para esse endereço — é preciso clicar no link
+  // de confirmação uma única vez para ativar o recebimento automático.
   const EMAIL_DESTINO = 'nicholasdribeiro@hotmail.com';
-  const ENDPOINT = `https://formsubmit.co/ajax/${EMAIL_DESTINO}`;
 
   const form = document.getElementById('form-denuncia');
   const fotoInput = document.getElementById('foto');
   const preview = document.getElementById('preview');
   const overlay = document.getElementById('overlay');
   const msgErro = document.getElementById('msg-erro');
-  const msgErroEnvio = document.getElementById('msg-erro-envio');
-  const btnEnviar = document.getElementById('btn-enviar');
+
+  // Configura o destino do envio e o retorno após enviar
+  form.action = `https://formsubmit.co/${EMAIL_DESTINO}`;
+  document.getElementById('campo-next').value =
+    `${window.location.origin}${window.location.pathname}?enviado=1`;
 
   fotoInput.addEventListener('change', () => {
     const arquivo = fotoInput.files[0];
@@ -306,46 +314,22 @@
     }
   });
 
-  form.addEventListener('submit', async e => {
-    e.preventDefault();
+  form.addEventListener('submit', e => {
     const nome = document.getElementById('nome').value.trim();
     const rua = document.getElementById('rua').value.trim();
     const bairro = document.getElementById('bairro').value.trim();
 
     if (!nome || !rua || !bairro) {
+      e.preventDefault();
       msgErro.style.display = 'block';
-      msgErroEnvio.style.display = 'none';
       return;
     }
     msgErro.style.display = 'none';
-    msgErroEnvio.style.display = 'none';
 
-    const dados = new FormData();
-    dados.append('Nome', nome);
-    dados.append('Rua', rua);
-    dados.append('Bairro', bairro);
-    dados.append('_subject', `Nova denúncia — ${bairro}`);
-    if (fotoInput.files[0]) {
-      dados.append('Foto', fotoInput.files[0]);
-    }
-
-    btnEnviar.disabled = true;
-    btnEnviar.textContent = 'Enviando...';
-
-    try {
-      const resposta = await fetch(ENDPOINT, {
-        method: 'POST',
-        body: dados,
-        headers: { 'Accept': 'application/json' }
-      });
-      if (!resposta.ok) throw new Error('Falha no envio');
-      overlay.classList.add('mostrar');
-    } catch (erro) {
-      msgErroEnvio.style.display = 'block';
-    } finally {
-      btnEnviar.disabled = false;
-      btnEnviar.textContent = 'Enviar denúncia';
-    }
+    // Deixa o assunto do e-mail mais claro antes de enviar de verdade
+    document.getElementById('campo-subject').value = `Nova denúncia — ${bairro}`;
+    // Sem preventDefault aqui: o formulário segue e envia normalmente,
+    // incluindo a foto, e volta para esta página com ?enviado=1
   });
 
   document.getElementById('btn-fechar').addEventListener('click', () => {
@@ -353,6 +337,13 @@
     form.reset();
     preview.style.display = 'none';
   });
+
+  // Se acabamos de voltar de um envio bem-sucedido, mostra a mensagem
+  const parametros = new URLSearchParams(window.location.search);
+  if (parametros.get('enviado') === '1') {
+    overlay.classList.add('mostrar');
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
 </script>
 
 </body>
